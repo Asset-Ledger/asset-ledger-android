@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/bottom_navigation_menu_ledger"
+        android:title="ledger"
+        android:enabled="true"
+        android:icon="@drawable/ledger_icon"
+        />
+    <item
+        android:id="@+id/bottom_navigation_menu_statistic"
+        android:title="statistic"
+        android:enabled="true"
+        android:icon="@drawable/statistics_icon"
+        />
+    <item
+        android:id="@+id/bottom_navigation_menu_asset"
+        android:title="asset"
+        android:enabled="true"
+        android:icon="@drawable/asset_icon"
+        />
+    <item
+        android:id="@+id/bottom_navigation_menu_setting"
+        android:title="setting"
+        android:enabled="true"
+        android:icon="@drawable/setting_icon"
+        />
+
+</menu>

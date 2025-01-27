@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bottom_navigation"
+    app:startDestination="@id/bottom_navigation_menu_ledger">
+
+    <fragment
+        android:id="@+id/bottom_navigation_menu_ledger"
+        android:name="asset.ledger.asset_ledger_android.fragment.MainActivityLedgerFragment"
+        android:label="fragment_main_activity_ledger"
+        tools:layout="@layout/fragment_main_activity_ledger" >
+        <action
+            android:id="@+id/action_mainActivityLedgerFragment_to_mainActivityAssetFragment"
+            app:destination="@id/bottom_navigation_menu_asset" />
+        <action
+            android:id="@+id/action_mainActivityLedgerFragment_to_mainActivityStatisticFragment"
+            app:destination="@id/bottom_navigation_menu_statistic" />
+        <action
+            android:id="@+id/action_mainActivityLedgerFragment_to_mainActivitySettingFragment"
+            app:destination="@id/mainActivitySettingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/bottom_navigation_menu_asset"
+        android:name="asset.ledger.asset_ledger_android.fragment.MainActivityAssetFragment"
+        android:label="fragment_main_activity_asset"
+        tools:layout="@layout/fragment_main_activity_asset" >
+        <action
+            android:id="@+id/action_mainActivityAssetFragment_to_mainActivityLedgerFragment"
+            app:destination="@id/bottom_navigation_menu_ledger" />
+        <action
+            android:id="@+id/action_mainActivityAssetFragment_to_mainActivityStatisticFragment"
+            app:destination="@id/bottom_navigation_menu_statistic" />
+        <action
+            android:id="@+id/action_mainActivityAssetFragment_to_mainActivitySettingFragment"
+            app:destination="@id/mainActivitySettingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mainActivitySettingFragment"
+        android:name="asset.ledger.asset_ledger_android.fragment.MainActivitySettingFragment"
+        android:label="fragment_main_activity_setting"
+        tools:layout="@layout/fragment_main_activity_setting" >
+        <action
+            android:id="@+id/action_mainActivitySettingFragment_to_mainActivityAssetFragment"
+            app:destination="@id/bottom_navigation_menu_asset" />
+        <action
+            android:id="@+id/action_mainActivitySettingFragment_to_mainActivityLedgerFragment"
+            app:destination="@id/bottom_navigation_menu_ledger" />
+        <action
+            android:id="@+id/bottom_navigation_menu_setting"
+            app:destination="@id/bottom_navigation_menu_statistic" />
+    </fragment>
+    <fragment
+        android:id="@+id/bottom_navigation_menu_statistic"
+        android:name="asset.ledger.asset_ledger_android.fragment.MainActivityStatisticFragment"
+        android:label="fragment_main_activity_statistic"
+        tools:layout="@layout/fragment_main_activity_statistic" >
+        <action
+            android:id="@+id/action_mainActivityStatisticFragment_to_mainActivityAssetFragment"
+            app:destination="@id/bottom_navigation_menu_asset" />
+        <action
+            android:id="@+id/action_mainActivityStatisticFragment_to_mainActivityLedgerFragment"
+            app:destination="@id/bottom_navigation_menu_ledger" />
+        <action
+            android:id="@+id/action_mainActivityStatisticFragment_to_mainActivitySettingFragment"
+            app:destination="@id/mainActivitySettingFragment" />
+    </fragment>
+</navigation>
