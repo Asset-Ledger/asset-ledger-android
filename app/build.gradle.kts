@@ -70,4 +70,18 @@ dependencies {
     implementation ("com.google.android.material:material:1.8.0")
     implementation ("androidx.fragment:fragment-ktx:1.5.5")
 
+    // recycler view
+    implementation ("androidx.recyclerview:recyclerview:1.2.1")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    // Gson Converter
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // OkHttp
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
+    // Coroutine
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0")
+    // Retrofit에서 코루틴을 사용할 수 있게 해주는 어댑터
+    implementation("com.squareup.retrofit2:adapter-rxjava2:2.9.0")
+
 }

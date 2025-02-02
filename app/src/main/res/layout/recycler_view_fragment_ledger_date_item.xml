@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/recycler_view_fragment_ledger_date_item"
+    android:layout_width="match_parent"
+    android:layout_height="35dp"
+    android:orientation="horizontal"
+    android:weightSum="100" >
+
+    <TextView
+        android:id="@+id/recycler_view_fragment_ledger_date_item_date_text_view"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="12"
+        android:text="30일"
+        android:textSize="18dp"
+        android:gravity="center"
+        android:paddingLeft="5dp"/>
+
+    <TextView
+        android:id="@+id/recycler_view_fragment_ledger_date_item_date_korean_text_view"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="15"
+        android:text="(수요일)"
+        android:textSize="14dp"
+        android:gravity="center_vertical" />
+
+    <TextView
+        android:id="@+id/recycler_view_fragment_ledger_date_item_empty_text_view"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="25"
+        android:gravity="center_vertical"
+        android:paddingLeft="5dp" />
+
+    <TextView
+        android:id="@+id/recycler_view_fragment_ledger_date_item_total_plus_text_view"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="24"
+        android:textStyle="bold"
+        android:text="+10000000원"
+        android:textSize="18dp"
+        android:gravity="center_vertical" />
+
+    <TextView
+        android:id="@+id/recycler_view_fragment_ledger_date_item_total_minus_text_view"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="24"
+        android:textStyle="bold"
+        android:text="-10000원"
+        android:textSize="18dp"
+        android:paddingRight="10dp"
+        android:gravity="center_vertical|end" />
+
+</LinearLayout>

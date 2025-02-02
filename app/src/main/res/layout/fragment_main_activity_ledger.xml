@@ -5,10 +5,130 @@
     android:layout_height="match_parent"
     tools:context=".fragment.MainActivityLedgerFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
+        android:id="@+id/fragment_ledger_linear_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="2" />
+        android:orientation="vertical"
+        android:weightSum="100" >
+
+        <RelativeLayout
+            android:id="@+id/fragment_ledger_top_menu_relative_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="26"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/fragment_ledger_top_menu_year_month_linear_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/fragment_ledger_top_menu_asset_type_spinner"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="15dp"
+                android:orientation="horizontal"
+                android:padding="5dp">
+
+                <ImageButton
+                    android:id="@+id/fragment_ledger_top_menu_left_arrow_image_button"
+                    android:layout_width="30dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/left_arrow" />
+
+                <TextView
+                    android:id="@+id/fragment_ledger_top_menu_year_month_text_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:text="2025년 1월"
+                    android:textSize="15dp" />
+
+                <ImageButton
+                    android:id="@+id/fragment_ledger_top_menu_right_arrow_image_button"
+                    android:layout_width="30dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/right_arrow" />
+
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/fragment_ledger_top_menu_asset_type_spinner"
+                android:layout_width="105dp"
+                android:layout_height="37dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="15dp" />
+
+            <Spinner
+                android:id="@+id/fragment_ledger_top_menu_asset_detail_type_spinner"
+                android:layout_width="105dp"
+                android:layout_height="37dp"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="15dp"
+                android:layout_toEndOf="@+id/fragment_ledger_top_menu_asset_type_spinner"
+                android:visibility="invisible" />
+
+            <Spinner
+                android:id="@+id/fragment_ledger_top_menu_date_due_spinner"
+                android:layout_width="105dp"
+                android:layout_height="37dp"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="25dp"
+                android:layout_marginTop="15dp"
+                android:layout_toEndOf="@+id/fragment_ledger_top_menu_asset_detail_type_spinner" />
+
+            <Spinner
+                android:id="@+id/fragment_ledger_top_menu_use_category_spinner"
+                android:layout_width="105dp"
+                android:layout_height="37dp"
+                android:layout_below="@+id/fragment_ledger_top_menu_asset_type_spinner"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="17dp"
+                android:layout_marginEnd="15dp"
+                android:layout_toStartOf="@+id/fragment_ledger_top_menu_plus_minus_spinner" />
+
+            <Spinner
+                android:id="@+id/fragment_ledger_top_menu_plus_minus_spinner"
+                android:layout_width="105dp"
+                android:layout_height="37dp"
+                android:layout_below="@+id/fragment_ledger_top_menu_asset_type_spinner"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="17dp"
+                android:layout_marginEnd="10dp" />
+
+            <Button
+                android:id="@+id/fragment_ledger_top_menu_init_condition_button"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_below="@+id/fragment_ledger_top_menu_plus_minus_spinner"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="17dp"
+                android:layout_marginEnd="20dp"
+                android:text="조건 초기화"
+                android:textSize="8dp" />
+
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/fragment_ledger_content_linear_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="74"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/fragment_ledger_content_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
 
 </FrameLayout>
