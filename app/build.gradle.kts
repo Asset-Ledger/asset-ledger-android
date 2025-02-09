@@ -82,6 +82,6 @@ dependencies {
     // Coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0")
     // Retrofit에서 코루틴을 사용할 수 있게 해주는 어댑터
-    implementation("com.squareup.retrofit2:adapter-rxjava2:2.9.0")
+    implementation ("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
 
 }

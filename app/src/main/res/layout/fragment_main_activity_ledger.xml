@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragment.MainActivityLedgerFragment">
 
     <LinearLayout
@@ -34,7 +35,8 @@
                     android:id="@+id/fragment_ledger_top_menu_left_arrow_image_button"
                     android:layout_width="30dp"
                     android:layout_height="match_parent"
-                    android:background="@drawable/left_arrow" />
+                    android:background="@drawable/left_arrow"
+                    android:enabled="false" />
 
                 <TextView
                     android:id="@+id/fragment_ledger_top_menu_year_month_text_view"
@@ -48,7 +50,8 @@
                     android:id="@+id/fragment_ledger_top_menu_right_arrow_image_button"
                     android:layout_width="30dp"
                     android:layout_height="match_parent"
-                    android:background="@drawable/right_arrow" />
+                    android:background="@drawable/right_arrow"
+                    android:enabled="false" />
 
             </LinearLayout>
 
@@ -59,7 +62,8 @@
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
                 android:layout_marginStart="25dp"
-                android:layout_marginTop="15dp" />
+                android:layout_marginTop="15dp"
+                android:enabled="false" />
 
             <Spinner
                 android:id="@+id/fragment_ledger_top_menu_asset_detail_type_spinner"
@@ -69,7 +73,7 @@
                 android:layout_marginStart="25dp"
                 android:layout_marginTop="15dp"
                 android:layout_toEndOf="@+id/fragment_ledger_top_menu_asset_type_spinner"
-                android:visibility="invisible" />
+                android:enabled="false" />
 
             <Spinner
                 android:id="@+id/fragment_ledger_top_menu_date_due_spinner"
@@ -78,7 +82,8 @@
                 android:layout_alignParentTop="true"
                 android:layout_marginStart="25dp"
                 android:layout_marginTop="15dp"
-                android:layout_toEndOf="@+id/fragment_ledger_top_menu_asset_detail_type_spinner" />
+                android:layout_toEndOf="@+id/fragment_ledger_top_menu_asset_detail_type_spinner"
+                android:enabled="false" />
 
             <Spinner
                 android:id="@+id/fragment_ledger_top_menu_use_category_spinner"
@@ -88,7 +93,8 @@
                 android:layout_marginStart="15dp"
                 android:layout_marginTop="17dp"
                 android:layout_marginEnd="15dp"
-                android:layout_toStartOf="@+id/fragment_ledger_top_menu_plus_minus_spinner" />
+                android:layout_toStartOf="@+id/fragment_ledger_top_menu_plus_minus_spinner"
+                android:enabled="false" />
 
             <Spinner
                 android:id="@+id/fragment_ledger_top_menu_plus_minus_spinner"
@@ -97,19 +103,59 @@
                 android:layout_below="@+id/fragment_ledger_top_menu_asset_type_spinner"
                 android:layout_alignParentEnd="true"
                 android:layout_marginTop="17dp"
-                android:layout_marginEnd="10dp" />
+                android:layout_marginEnd="10dp"
+                android:enabled="false" />
 
             <Button
                 android:id="@+id/fragment_ledger_top_menu_init_condition_button"
                 android:layout_width="wrap_content"
                 android:layout_height="30dp"
                 android:layout_below="@+id/fragment_ledger_top_menu_plus_minus_spinner"
-                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="40dp"
                 android:layout_marginTop="17dp"
-                android:layout_marginEnd="20dp"
+                android:enabled="false"
                 android:text="조건 초기화"
                 android:textSize="8dp" />
 
+<!--            <Button-->
+<!--                android:id="@+id/fragment_ledger_top_menu_add_button"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="30dp"-->
+<!--                android:layout_below="@+id/fragment_ledger_top_menu_plus_minus_spinner"-->
+<!--                android:layout_marginStart="35dp"-->
+<!--                android:layout_marginTop="17dp"-->
+<!--                android:layout_toEndOf="@+id/fragment_ledger_top_menu_init_condition_button"-->
+<!--                android:enabled="false"-->
+<!--                android:gravity="center"-->
+<!--                android:text="추가"-->
+<!--                android:textSize="8dp" />-->
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fragment_ledger_top_menu_add_ledger_floating_action_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/fragment_ledger_top_menu_plus_minus_spinner"
+                android:layout_marginStart="57dp"
+                android:layout_marginTop="12dp"
+                app:fabSize="mini"
+                android:layout_toEndOf="@+id/fragment_ledger_top_menu_init_condition_button"
+                android:src="@drawable/baseline_add"
+                android:enabled="false"
+                />
+
+            <Button
+                android:id="@+id/fragment_ledger_top_menu_search_button"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_below="@+id/fragment_ledger_top_menu_plus_minus_spinner"
+                android:layout_marginStart="57dp"
+                android:layout_marginTop="17dp"
+                android:layout_toEndOf="@+id/fragment_ledger_top_menu_add_ledger_floating_action_button"
+                android:enabled="false"
+                android:gravity="center"
+                android:text="조회"
+                android:textSize="8dp" />
 
         </RelativeLayout>
 
@@ -117,7 +163,7 @@
             android:id="@+id/fragment_ledger_content_linear_layout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="74"
+            android:layout_weight="72"
             android:orientation="vertical">
 
             <androidx.recyclerview.widget.RecyclerView
