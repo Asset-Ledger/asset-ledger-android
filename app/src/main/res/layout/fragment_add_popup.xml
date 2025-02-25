@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:context=".fragment.UseCategoryPopupFragment">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <EditText
+                android:id="@+id/fragment_add_popup_name_edit_text"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:hint="이름을 입력하세요"
+                android:textSize="20dp" />
+
+            <EditText
+                android:id="@+id/fragment_add_popup_amount_edit_text"
+                android:layout_marginTop="20dp"
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:hint="현재 금액을 입력하세요"
+                android:textSize="20dp" />
+
+        </LinearLayout>
+
+
+
+        <Button
+            android:id="@+id/fragment_add_popup_confirm_button"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="10dp"
+            android:layout_gravity="center"
+            android:text="확인"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+
+
+</FrameLayout>
