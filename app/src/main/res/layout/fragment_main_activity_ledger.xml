@@ -118,19 +118,6 @@
                 android:text="조건 초기화"
                 android:textSize="8dp" />
 
-<!--            <Button-->
-<!--                android:id="@+id/fragment_ledger_top_menu_add_button"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="30dp"-->
-<!--                android:layout_below="@+id/fragment_ledger_top_menu_plus_minus_spinner"-->
-<!--                android:layout_marginStart="35dp"-->
-<!--                android:layout_marginTop="17dp"-->
-<!--                android:layout_toEndOf="@+id/fragment_ledger_top_menu_init_condition_button"-->
-<!--                android:enabled="false"-->
-<!--                android:gravity="center"-->
-<!--                android:text="추가"-->
-<!--                android:textSize="8dp" />-->
-
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fragment_ledger_top_menu_add_ledger_floating_action_button"
                 android:layout_width="wrap_content"
@@ -159,8 +146,8 @@
 
         </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/fragment_ledger_content_linear_layout"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/fragment_ledger_content_swipe_refresh_layout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="72"
@@ -171,7 +158,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-        </LinearLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 
     </LinearLayout>

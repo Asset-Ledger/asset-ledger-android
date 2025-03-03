@@ -2,59 +2,241 @@ package asset.ledger.asset_ledger_android
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import asset.ledger.asset_ledger_android.fragment.AssetDetailTypeAddPopupFragment
 import asset.ledger.asset_ledger_android.fragment.AssetDetailTypePopupFragment
 import asset.ledger.asset_ledger_android.fragment.AssetTypeAddPopupFragment
 import asset.ledger.asset_ledger_android.fragment.AssetTypePopupFragment
+import asset.ledger.asset_ledger_android.fragment.UseCategoryAddPopupFragment
 import asset.ledger.asset_ledger_android.fragment.UseCategoryPopupFragment
+import asset.ledger.asset_ledger_android.retrofit.ledger.LedgerApiInstance
+import asset.ledger.asset_ledger_android.retrofit.ledger.dto.RequestLedgerDto
+import asset.ledger.asset_ledger_android.retrofit.ledger.dto.RequestTransferLedgerDto
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 class AddLedgerActivity : AppCompatActivity() {
 
+    private lateinit var plusMinusRadioGroup: RadioGroup
+
     private lateinit var dateTextView : TextView
     private lateinit var timeTextView : TextView
+
     private lateinit var amountEditText: EditText
     private lateinit var useCategoryEditText: EditText
     private lateinit var assetTypeEditText: EditText
     private lateinit var assetDetailTypeEditText: EditText
     private lateinit var descriptionEditText: EditText
-    private lateinit var assetDetailTitleLinearLayout: LinearLayout
-    private lateinit var assetDetailLinearLayout: LinearLayout
+    private lateinit var assetOutAccountEditText: EditText
+    private lateinit var assetInAccountEditText: EditText
+
+    private lateinit var useCategoryTitleLinearLayout: LinearLayout
+    private lateinit var useCategoryLinearLayout: LinearLayout
+    private lateinit var assetTypeTitleLinearLayout: LinearLayout
+    private lateinit var assetTypeLinearLayout: LinearLayout
+    private lateinit var assetDetailTypeTitleLinearLayout: LinearLayout
+    private lateinit var assetDetailTypeLinearLayout: LinearLayout
+    private lateinit var assetOutAccountTitleLinearLayout: LinearLayout
+    private lateinit var assetOutAccountLinearLayout: LinearLayout
+    private lateinit var assetInAccountTitleLinearLayout: LinearLayout
+    private lateinit var assetInAccountLinearLayout: LinearLayout
+
+    private lateinit var useCategoryAddButton: Button
     private lateinit var assetTypeAddButton: Button
     private lateinit var assetDetailTypeAddButton: Button
+    private lateinit var assetOutAccountAddButton: Button
+    private lateinit var assetInAccountAddButton: Button
+
+    private lateinit var ledgerSaveButton: Button
+    private lateinit var ledgerAdditionalCreateButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_ledger)
 
+        plusMinusRadioGroup = findViewById(R.id.activity_add_ledger_radio_group)
         dateTextView = findViewById(R.id.activity_add_ledger_date_text_view)
         timeTextView = findViewById(R.id.activity_add_ledger_time_text_view)
         amountEditText = findViewById(R.id.activity_add_ledger_amount_edit_text)
         useCategoryEditText = findViewById(R.id.activity_add_ledger_use_category_edit_text)
-        assetDetailTitleLinearLayout = findViewById(R.id.activity_add_ledger_asset_detail_type_title_linear_layout)
-        assetDetailLinearLayout = findViewById(R.id.activity_add_ledger_asset_detail_type_linear_layout)
+
+        useCategoryTitleLinearLayout = findViewById(R.id.activity_add_ledger_use_category_title_linear_layout)
+        useCategoryLinearLayout = findViewById(R.id.activity_add_ledger_use_category_linear_layout)
+        assetTypeTitleLinearLayout = findViewById(R.id.activity_add_ledger_asset_type_title_linear_layout)
+        assetTypeLinearLayout = findViewById(R.id.activity_add_ledger_asset_type_linear_layout)
+        assetDetailTypeTitleLinearLayout = findViewById(R.id.activity_add_ledger_asset_detail_type_title_linear_layout)
+        assetDetailTypeLinearLayout = findViewById(R.id.activity_add_ledger_asset_detail_type_linear_layout)
+        assetOutAccountTitleLinearLayout = findViewById(R.id.activity_add_ledger_out_account_title_linear_layout)
+        assetOutAccountLinearLayout = findViewById(R.id.activity_add_ledger_out_account_linear_layout)
+        assetInAccountTitleLinearLayout = findViewById(R.id.activity_add_ledger_in_account_title_linear_layout)
+        assetInAccountLinearLayout = findViewById(R.id.activity_add_ledger_in_account_linear_layout)
+
         assetTypeEditText = findViewById(R.id.activity_add_ledger_asset_type_edit_text)
         assetDetailTypeEditText = findViewById(R.id.activity_add_ledger_asset_detail_type_edit_text)
+        assetOutAccountEditText = findViewById(R.id.activity_add_ledger_out_account_edit_text)
+        assetInAccountEditText = findViewById(R.id.activity_add_ledger_in_account_edit_text)
         descriptionEditText = findViewById(R.id.activity_add_ledger_description_edit_text)
+
+        useCategoryAddButton = findViewById(R.id.activity_add_ledger_use_category_add_button)
         assetTypeAddButton = findViewById(R.id.activity_add_ledger_asset_type_add_button)
         assetDetailTypeAddButton = findViewById(R.id.activity_add_ledger_asset_detail_type_add_button)
+        assetOutAccountAddButton = findViewById(R.id.activity_add_ledger_out_account_add_button)
+        assetInAccountAddButton = findViewById(R.id.activity_add_ledger_in_account_add_button)
+        ledgerSaveButton = findViewById(R.id.activity_add_ledger_save_save_button)
 
+        val userId: String = "user1"
+
+        hideLinearLayout()
         setDateTextView()
         setDateTextViewClickListener()
         setTimeTextViewClickListener()
         setUseCategoryEditTextClickListener()
         setAssetTypeEditTextClickListener()
         setAssetDetailTypeEditTextClickListener()
+        setAssetOutAccountEditTextClickListener()
+        setAssetInAccountEditTextClickListener()
+        setUseCategoryAddButton()
         setAssetTypeAddButton()
+        setAssetDetailTypeAddButton()
+        setAssetOutAccountAddButtonClickListener()
+        setAssetInAccountAddButtonClickListener()
+        setLedgerSaveButton(userId)
+        setRadioGroupCheckedChangeListener()
 
+    }
+
+    private fun setAssetOutAccountAddButtonClickListener() {
+        assetOutAccountAddButton.setOnClickListener {
+            val assetType : String = "계좌"
+
+            val assetDetailTypeAddPopupFragment = AssetDetailTypeAddPopupFragment()
+
+            val bundle = Bundle()
+            bundle.putString("assetType", assetType)
+
+            assetDetailTypeAddPopupFragment.arguments = bundle
+
+            assetDetailTypeAddPopupFragment.show(supportFragmentManager, "assetDetailTypeAddPopupFragment")
+        }
+    }
+
+    private fun setAssetInAccountAddButtonClickListener() {
+        assetInAccountAddButton.setOnClickListener {
+            val assetType : String = "계좌"
+
+            val assetDetailTypeAddPopupFragment = AssetDetailTypeAddPopupFragment()
+
+            val bundle = Bundle()
+            bundle.putString("assetType", assetType)
+
+            assetDetailTypeAddPopupFragment.arguments = bundle
+
+            assetDetailTypeAddPopupFragment.show(supportFragmentManager, "assetDetailTypeAddPopupFragment")
+        }
+    }
+
+    private fun setAssetOutAccountEditTextClickListener() {
+        assetOutAccountEditText.setOnClickListener {
+            showAssetDetailTypePopup(true, R.id.activity_add_ledger_out_account_edit_text)
+        }
+    }
+
+    private fun setAssetInAccountEditTextClickListener() {
+        assetInAccountEditText.setOnClickListener {
+            showAssetDetailTypePopup(true, R.id.activity_add_ledger_in_account_edit_text)
+        }
+    }
+
+    private fun setRadioGroupCheckedChangeListener() {
+        plusMinusRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+            when (checkedId) {
+                R.id.activity_add_ledger_transfer_radio_button -> {
+                    useCategoryTitleLinearLayout.visibility = View.GONE
+                    useCategoryLinearLayout.visibility = View.GONE
+                    assetTypeTitleLinearLayout.visibility = View.GONE
+                    assetTypeLinearLayout.visibility = View.GONE
+                    assetDetailTypeTitleLinearLayout.visibility = View.GONE
+                    assetDetailTypeLinearLayout.visibility = View.GONE
+                    useCategoryEditText.text.clear()
+                    assetTypeEditText.text.clear()
+                    assetDetailTypeEditText.text.clear()
+
+                    assetOutAccountTitleLinearLayout.visibility = View.VISIBLE
+                    assetOutAccountLinearLayout.visibility = View.VISIBLE
+                    assetInAccountTitleLinearLayout.visibility = View.VISIBLE
+                    assetInAccountLinearLayout.visibility = View.VISIBLE
+                }
+                else -> {
+                    useCategoryTitleLinearLayout.visibility = View.VISIBLE
+                    useCategoryLinearLayout.visibility = View.VISIBLE
+                    assetTypeTitleLinearLayout.visibility = View.VISIBLE
+                    assetTypeLinearLayout.visibility = View.VISIBLE
+
+                    assetOutAccountTitleLinearLayout.visibility = View.GONE
+                    assetOutAccountLinearLayout.visibility = View.GONE
+                    assetInAccountTitleLinearLayout.visibility = View.GONE
+                    assetInAccountLinearLayout.visibility = View.GONE
+                    assetOutAccountEditText.text.clear()
+                    assetInAccountEditText.text.clear()
+                }
+            }
+        }
+    }
+
+    private fun setLedgerSaveButton(userId: String) {
+        ledgerSaveButton.setOnClickListener {
+            fetchCreateLedger(userId)
+
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+    }
+
+    private fun hideLinearLayout() {
+        assetDetailTypeTitleLinearLayout.visibility = View.GONE
+        assetDetailTypeLinearLayout.visibility = View.GONE
+        assetOutAccountTitleLinearLayout.visibility = View.GONE
+        assetOutAccountLinearLayout.visibility = View.GONE
+        assetInAccountTitleLinearLayout.visibility = View.GONE
+        assetInAccountLinearLayout.visibility = View.GONE
+    }
+
+    private fun setAssetDetailTypeAddButton() {
+        assetDetailTypeAddButton.setOnClickListener {
+            val assetType : String = assetTypeEditText.text.toString()
+
+            if (assetType.isNullOrEmpty()) {
+                Toast.makeText(this, "자산 종류를 선택해주세요.", Toast.LENGTH_LONG).show()
+            }
+
+            val assetDetailTypeAddPopupFragment = AssetDetailTypeAddPopupFragment()
+
+            val bundle = Bundle()
+            bundle.putString("assetType", assetType)
+
+            assetDetailTypeAddPopupFragment.arguments = bundle
+
+            assetDetailTypeAddPopupFragment.show(supportFragmentManager, "assetDetailTypeAddPopupFragment")
+        }
     }
 
     private fun setAssetTypeAddButton() {
@@ -64,23 +246,44 @@ class AddLedgerActivity : AppCompatActivity() {
         }
     }
 
+    private fun setUseCategoryAddButton() {
+        useCategoryAddButton.setOnClickListener {
+            val assetTypeAddPopupFragment = UseCategoryAddPopupFragment()
+            assetTypeAddPopupFragment.show(supportFragmentManager, "useCategoryAddPopupFragment")
+        }
+    }
+
+    fun updateOutAccountEditText(item: String) {
+        assetOutAccountEditText.setText(item)
+    }
+
+    fun updateInAccountEditText(item: String) {
+        assetInAccountEditText.setText(item)
+    }
+
     fun updateAssetDetailTypeEditText(item: String) {
         assetDetailTypeEditText.setText(item)
     }
 
     private fun setAssetDetailTypeEditTextClickListener() {
         assetDetailTypeEditText.setOnClickListener {
-            showAssetDetailTypePopup()
+            showAssetDetailTypePopup(false, R.id.activity_add_ledger_asset_detail_type_edit_text)
         }
     }
 
-    private fun showAssetDetailTypePopup() {
+    private fun showAssetDetailTypePopup(isTransfer: Boolean, editTextId: Int) {
         val assetType : String = assetTypeEditText.text.toString()
 
-        val assetDetailTypePopupFragment = AssetDetailTypePopupFragment()
+        val assetDetailTypePopupFragment = AssetDetailTypePopupFragment(editTextId)
 
         val bundle = Bundle()
-        bundle.putString("assetType", assetType)
+
+        if (isTransfer) {
+            bundle.putString("assetType", "계좌")
+        }
+        else {
+            bundle.putString("assetType", assetType)
+        }
 
         assetDetailTypePopupFragment.arguments = bundle
 
@@ -93,12 +296,12 @@ class AddLedgerActivity : AppCompatActivity() {
         assetDetailTypeEditText.text.clear()
 
         if (assetTypeEditText.text.toString() == "계좌" || assetTypeEditText.text.toString() == "카드") {
-            assetDetailTitleLinearLayout.visibility = View.VISIBLE
-            assetDetailLinearLayout.visibility = View.VISIBLE
+            assetDetailTypeTitleLinearLayout.visibility = View.VISIBLE
+            assetDetailTypeLinearLayout.visibility = View.VISIBLE
         }
         else {
-            assetDetailTitleLinearLayout.visibility = View.GONE
-            assetDetailLinearLayout.visibility = View.GONE
+            assetDetailTypeTitleLinearLayout.visibility = View.GONE
+            assetDetailTypeLinearLayout.visibility = View.GONE
         }
     }
 
@@ -206,9 +409,6 @@ class AddLedgerActivity : AppCompatActivity() {
 
                     // 날짜와 요일을 TextView에 표시
                     dateTextView.text = "$formattedDate ($dayOfWeek)"
-
-//                    val selectedDate = "$selectedYear/${String.format("%02d", selectedMonth + 1)}/$selectedDay" // 월은 0부터 시작하므로 +1
-//                    dateTextView.text = selectedDate
                 },
                 year, month, day
             )
@@ -239,6 +439,274 @@ class AddLedgerActivity : AppCompatActivity() {
         // 원하는 형식으로 반환
         dateTextView.text = "$date ($dayOfWeek)"
         timeTextView.text = "$period $time"
+    }
+
+    private fun getPlusMinus(): String {
+        var plusMinus: String = "PLUS"
+        val selectedRadioButtonId = plusMinusRadioGroup.checkedRadioButtonId
+        val plusMinusText = findViewById<Button>(selectedRadioButtonId).text.toString()
+
+        if (plusMinusText.equals("지출")) {
+            plusMinus = "MINUS"
+        }
+        else if (plusMinusText.equals("이체")) {
+            plusMinus = "TRANSFER"
+        }
+
+        return plusMinus
+    }
+
+    private fun buildRequestTransferOutLedgerDto(): RequestLedgerDto {
+        var description: String = ""
+
+        if (!descriptionEditText.text.toString().isNullOrEmpty()) {
+            description = descriptionEditText.text.toString()
+        }
+
+        // 출금 계좌 Ledger 생성
+        val requestOutLedgerDto: RequestLedgerDto = RequestLedgerDto(
+            "MINUS",
+            dateTextView.text.toString(),
+            timeTextView.text.toString(),
+            "출금 이체",
+            "계좌",
+            assetOutAccountEditText.text.toString(),
+            description,
+            amountEditText.text.toString().toInt()
+        )
+
+        return requestOutLedgerDto
+    }
+
+    private fun buildRequestTransferInLedgerDto(): RequestLedgerDto {
+        var description: String = ""
+
+        if (!descriptionEditText.text.toString().isNullOrEmpty()) {
+            description = descriptionEditText.text.toString()
+        }
+
+        // 입금 계좌 Ledger 생성
+        val requestInLedgerDto: RequestLedgerDto = RequestLedgerDto(
+            "PLUS",
+            dateTextView.text.toString(),
+            timeTextView.text.toString(),
+            "입금 이체",
+            "계좌",
+            assetInAccountEditText.text.toString(),
+            description,
+            amountEditText.text.toString().toInt()
+        )
+
+        return requestInLedgerDto
+    }
+
+    private fun buildRequestPlusMinusLedgerDto(): RequestLedgerDto {
+        var plusMinus: String = getPlusMinus()
+
+        var description: String = ""
+
+        if (!descriptionEditText.text.toString().isNullOrEmpty()) {
+            description = descriptionEditText.text.toString()
+        }
+
+        val requestLedgerDto: RequestLedgerDto = RequestLedgerDto(
+            plusMinus,
+            dateTextView.text.toString(),
+            timeTextView.text.toString(),
+            useCategoryEditText.text.toString(),
+            assetTypeEditText.text.toString(),
+            assetDetailTypeEditText.text.toString(),
+            description,
+            amountEditText.text.toString().toInt()
+        )
+
+        return requestLedgerDto
+    }
+
+    private fun validateTransferLedgerRequest(): Boolean {
+        if (amountEditText.text.toString().isNullOrEmpty()) {
+            return false
+        }
+        else {
+            if (amountEditText.text.toString().toIntOrNull() == null) {
+                return false
+            }
+        }
+
+        if (assetOutAccountEditText.text.toString().isNullOrEmpty()) {
+            return false
+        }
+
+        if (assetInAccountEditText.text.toString().isNullOrEmpty()) {
+            return false
+        }
+
+        return true
+    }
+
+    private fun validatePlusMinusLedgerRequest(): Boolean {
+        if (amountEditText.text.toString().isNullOrEmpty()) {
+            return false
+        }
+        else {
+            if (amountEditText.text.toString().toIntOrNull() == null) {
+                return false
+            }
+        }
+
+        if (useCategoryEditText.text.toString().isNullOrEmpty()) {
+            return false
+        }
+
+        if (assetTypeEditText.text.toString().isNullOrEmpty()) {
+            return false
+        }
+
+        if (assetTypeEditText.text.toString().equals("계좌")
+            || assetTypeEditText.text.toString().equals("카드")) {
+            if (assetDetailTypeEditText.text.toString().isNullOrEmpty()) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    private fun fetchCreateLedger(userId: String) {
+        val pluMinus = getPlusMinus()
+
+        if (!pluMinus.equals("TRANSFER")) {
+            // 이체가 아닐 경우, 즉 수입이나 지출일 경우
+            fetchCreatePlusMinusLedger(userId)
+        }
+        else {
+            // 이체인 경우
+            fetchCreateTransferLedger(userId)
+        }
+    }
+
+    private fun fetchCreateTransferLedger(userId: String) {
+        if (!validateTransferLedgerRequest()) {
+            Toast.makeText(this, "필요한 내용들히 정확히 입력해주세요.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        if (assetOutAccountEditText.text.toString().equals(assetInAccountEditText.text.toString())) {
+            Toast.makeText(this, "출금 계좌와 입금 계좌는 같을 수 없습니다.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val requestOutLedgerDto: RequestLedgerDto = buildRequestTransferOutLedgerDto()
+        val requestInLedgerDto: RequestLedgerDto = buildRequestTransferInLedgerDto()
+
+        // 비동기 작업을 위한 launch 호출
+        lifecycleScope.launch {
+            // 비동기 API 호출을 처리
+            handleCreateTransferLedgerApiResponse(
+                userId,
+                requestOutLedgerDto,
+                requestInLedgerDto
+            )
+        }
+    }
+
+    private fun fetchCreatePlusMinusLedger(userId: String) {
+        if (!validatePlusMinusLedgerRequest()) {
+            Toast.makeText(this, "필요한 내용들을 정확 입력해주세요.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val requestLedgerDto: RequestLedgerDto = buildRequestPlusMinusLedgerDto()
+
+        // 비동기 작업을 위한 launch 호출
+        lifecycleScope.launch {
+            // 비동기 API 호출을 처리
+            handleCreatePlusMinusLedgerApiResponse(
+                userId,
+                requestLedgerDto
+            )
+        }
+    }
+
+    private suspend fun handleCreateTransferLedgerApiResponse(
+        userId : String,
+        requestOutLedgerDto: RequestLedgerDto,
+        requestInLedgerDto: RequestLedgerDto
+    ) {
+        try {
+            val response = createTransferLedger(userId, requestOutLedgerDto, requestInLedgerDto)
+
+            // 응답 본문, 상태 코드, 헤더 처리
+            if (response.isSuccessful) {
+                val statusCode = response.code() // 상태 코드
+                val headers = response.headers() // 헤더
+
+                Toast.makeText(this@AddLedgerActivity, "정상적으로 이체 추가를 완료했습니다.", Toast.LENGTH_LONG).show()
+
+                // UI 업데이트 (Main 스레드에서 처리)
+//                withContext(Dispatchers.Main) {
+//                    finish()
+//                }
+            } else {
+                // 오류 처리
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@AddLedgerActivity, "이체 추가 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+                }
+            }
+        } catch (e: Exception) {
+            // 예외 처리
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@AddLedgerActivity, "이체 추가 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private suspend fun handleCreatePlusMinusLedgerApiResponse(userId : String, requestLedgerDto: RequestLedgerDto) {
+        try {
+            val response = createPlusMinusLedger(userId, requestLedgerDto)
+
+            // 응답 본문, 상태 코드, 헤더 처리
+            if (response.isSuccessful) {
+                val statusCode = response.code() // 상태 코드
+                val headers = response.headers() // 헤더
+
+                Toast.makeText(this@AddLedgerActivity, "정상적으로 가계부 추가를 완료했습니다.", Toast.LENGTH_LONG).show()
+
+                // UI 업데이트 (Main 스레드에서 처리)
+//                withContext(Dispatchers.Main) {
+//                    finish()
+//                }
+            } else {
+                // 오류 처리
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@AddLedgerActivity, "가계부 추가 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+                }
+            }
+        } catch (e: Exception) {
+            // 예외 처리
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@AddLedgerActivity, "가계부 추가 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private suspend fun createTransferLedger(
+        userId: String,
+        requestOutLedgerDto: RequestLedgerDto,
+        requestInLedgerDto: RequestLedgerDto
+    ): Response<Void> {
+        return withContext(Dispatchers.IO) {
+            LedgerApiInstance.ledgerApiService.createTransferLedger(
+                userId,
+                RequestTransferLedgerDto(requestOutLedgerDto, requestInLedgerDto)
+            )
+        }
+    }
+
+    private suspend fun createPlusMinusLedger(userId: String, requestLedgerDto: RequestLedgerDto): Response<Void> {
+        return withContext(Dispatchers.IO) {
+            LedgerApiInstance.ledgerApiService.createPlusMinusLedger(userId, requestLedgerDto)
+        }
     }
 
 }

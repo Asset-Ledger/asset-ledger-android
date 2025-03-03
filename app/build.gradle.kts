@@ -70,6 +70,8 @@ dependencies {
     implementation ("com.google.android.material:material:1.8.0")
     implementation ("androidx.fragment:fragment-ktx:1.5.5")
 
+    // swipe refresh layout
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     // recycler view
     implementation ("androidx.recyclerview:recyclerview:1.2.1")
 

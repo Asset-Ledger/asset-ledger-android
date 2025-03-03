@@ -27,9 +27,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
-class AssetDetailTypePopupFragment : DialogFragment() {
+class AssetDetailTypePopupFragment(editTextId: Int) : DialogFragment() {
 
     private lateinit var assetDetailTypeRecyclerView : RecyclerView
+    private val editTextId = editTextId
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,7 +51,15 @@ class AssetDetailTypePopupFragment : DialogFragment() {
     private fun setAssetTypeRecyclerView(recyclerViewItems : List<PopupRecyclerViewItem>) {
         assetDetailTypeRecyclerView.layoutManager = GridLayoutManager(context, 4)
         var popupRecyclerViewAdapter : PopupRecyclerViewAdapter = PopupRecyclerViewAdapter(recyclerViewItems) { item ->
-            (activity as? AddLedgerActivity)?.updateAssetDetailTypeEditText(item)
+            if (editTextId == R.id.activity_add_ledger_asset_detail_type_edit_text) {
+                (activity as? AddLedgerActivity)?.updateAssetDetailTypeEditText(item)
+            }
+            else if (editTextId == R.id.activity_add_ledger_out_account_edit_text) {
+                (activity as? AddLedgerActivity)?.updateOutAccountEditText(item)
+            }
+            else if (editTextId == R.id.activity_add_ledger_in_account_edit_text) {
+                (activity as? AddLedgerActivity)?.updateInAccountEditText(item)
+            }
             dismiss()
         }
 

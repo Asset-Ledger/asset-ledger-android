@@ -15,7 +15,9 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-class LedgerRecyclerViewAdapter(private val items : List<LedgerRecyclerViewItem>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class LedgerRecyclerViewAdapter(
+    private val items : List<LedgerRecyclerViewItem>,
+    private val onItemLongClick: (LedgerRecyclerViewItem, View) -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
         const val TYPE_LEDGER_ITEM = 0
         const val TYPE_DATE_ITEM = 1
@@ -83,8 +85,14 @@ class LedgerRecyclerViewAdapter(private val items : List<LedgerRecyclerViewItem>
                 else {
                     holder.assetAndDetailTypeTextView.text = ledgerItem.assetType
                 }
-                holder.createTimeTextView.text = ledgerItem.createdTime
-                holder.amountTextView.text = ledgerItem.amount.toString()
+                val createdTimeSplit = ledgerItem.createdTime.split(":")
+                holder.createTimeTextView.text = "${createdTimeSplit[0]}:${createdTimeSplit[1]}"
+                holder.amountTextView.text = "${ledgerItem.amount}원"
+
+                holder.itemView.setOnLongClickListener {
+                    onItemLongClick(ledgerItem, holder.itemView)
+                    true
+                }
             }
             is LedgerRecyclerViewDateItemViewHolder -> {
                 val dateItem = items[position]

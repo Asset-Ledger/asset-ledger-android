@@ -15,15 +15,15 @@
             android:layout_height="wrap_content" >
 
             <EditText
-                android:id="@+id/fragment_add_popup_name_edit_text"
+                android:id="@+id/fragment_add_asset_detail_popup_name_edit_text"
                 android:layout_width="220dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:hint="자산을 입력하세요"
+                android:hint="자산 세부를 입력하세요"
                 android:textSize="20dp" />
 
             <EditText
-                android:id="@+id/fragment_add_popup_amount_edit_text"
+                android:id="@+id/fragment_add_asset_detail_popup_amount_edit_text"
                 android:layout_marginTop="20dp"
                 android:layout_width="220dp"
                 android:layout_height="wrap_content"
@@ -36,7 +36,7 @@
 
 
         <Button
-            android:id="@+id/fragment_add_popup_confirm_button"
+            android:id="@+id/fragment_add_asset_detail_popup_confirm_button"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="10dp"
             android:layout_gravity="center"

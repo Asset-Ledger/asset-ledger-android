@@ -1,16 +1,23 @@
 package asset.ledger.asset_ledger_android.fragment
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.PopupMenu
+import android.widget.PopupWindow
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -18,6 +25,7 @@ import androidx.core.view.size
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import asset.ledger.asset_ledger_android.AddLedgerActivity
 import asset.ledger.asset_ledger_android.R
 import asset.ledger.asset_ledger_android.recyclerview.LedgerRecyclerViewAdapter
@@ -33,6 +41,7 @@ import asset.ledger.asset_ledger_android.retrofit.category.UseCategoryApiInstanc
 import asset.ledger.asset_ledger_android.retrofit.category.dto.ResponseUseCategoryDto
 import asset.ledger.asset_ledger_android.retrofit.category.dto.ResponseUseCategoryListDto
 import asset.ledger.asset_ledger_android.retrofit.ledger.LedgerApiInstance
+import asset.ledger.asset_ledger_android.retrofit.ledger.dto.RequestLedgerDto
 import asset.ledger.asset_ledger_android.retrofit.ledger.dto.ResponseLedgerDto
 import asset.ledger.asset_ledger_android.retrofit.ledger.dto.ResponseLedgerListDto
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -59,6 +68,7 @@ class MainActivityLedgerFragment : Fragment() {
     private lateinit var ledgerRecyclerView : RecyclerView
     private lateinit var searchLedgerButton : Button
     private lateinit var addLedgerFloatingActionButton : FloatingActionButton
+    private lateinit var ledgerContentSwipeRefreshLayout: SwipeRefreshLayout
     private var assetTypeApiFlag : Boolean = false
     private var useCategoryApiFlag : Boolean = false
 
@@ -81,6 +91,7 @@ class MainActivityLedgerFragment : Fragment() {
         ledgerRecyclerView = view.findViewById(R.id.fragment_ledger_content_recycler_view)
         searchLedgerButton = view.findViewById(R.id.fragment_ledger_top_menu_search_button)
         addLedgerFloatingActionButton = view.findViewById(R.id.fragment_ledger_top_menu_add_ledger_floating_action_button)
+        ledgerContentSwipeRefreshLayout = view.findViewById(R.id.fragment_ledger_content_swipe_refresh_layout)
 
         val userId : String = "user1"
         val startDate : String = "1"
@@ -117,7 +128,22 @@ class MainActivityLedgerFragment : Fragment() {
         // useCategory 데이터 호출하고 useCategorySpinner 세팅
         fetchGetUseCategories(userId, startDate)
 
+        // swipeRefreshLayout refreshListener 세팅
+        setLedgerContentSwipeRefreshLayoutRefreshListener(userId, startDate)
+
         return view
+    }
+
+    private fun setLedgerContentSwipeRefreshLayoutRefreshListener(userId: String, startDate: String) {
+        ledgerContentSwipeRefreshLayout.setOnRefreshListener {
+            refreshLedgerRecycler(userId, startDate)
+        }
+    }
+
+    private fun refreshLedgerRecycler(userId: String, startDate: String) {
+        // 데이터 갱신 작업
+        fetchGetLedgers(userId, startDate)
+        ledgerContentSwipeRefreshLayout.isRefreshing = false
     }
 
     // API 호출을 담당하는 비동기 함수
@@ -257,18 +283,32 @@ class MainActivityLedgerFragment : Fragment() {
             if (responseLedgerDto.plusMinusType.equals("PLUS") ||
                 responseLedgerDto.plusMinusType.equals("plus")
             ) {
-                plus += responseLedgerDto.amount
+                if (!checkTransferLedger(responseLedgerDto)) {
+                    plus += responseLedgerDto.amount
+                }
             }
             else if (responseLedgerDto.plusMinusType.equals("MINUS") ||
                 responseLedgerDto.plusMinusType.equals("minus")
             ) {
-                minus += responseLedgerDto.amount
+                if (!checkTransferLedger(responseLedgerDto)) {
+                    minus += responseLedgerDto.amount
+                }
             }
 
             datesAndPlusMinus.put(responseLedgerDto.editDate, mutableListOf(plus, minus))
         }
 
         return datesAndPlusMinus
+    }
+
+    private fun checkTransferLedger(responseLedgerDto: ResponseLedgerDto): Boolean {
+        // 입금 이체, 혹은 출금 이체 일경우 사용 요금 계산에서 제외
+        if (responseLedgerDto.useCategory.equals("입금 이체") ||
+            responseLedgerDto.useCategory.equals("출금 이체")) {
+            return true
+        }
+
+        return false
     }
 
     // Retrofit을 사용하여 API를 비동기적으로 호출
@@ -298,7 +338,34 @@ class MainActivityLedgerFragment : Fragment() {
 
     private fun setLedgerRecyclerView(ledgerRecyclerViewItems : List<LedgerRecyclerViewItem>) {
         ledgerRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        ledgerRecyclerView.adapter = LedgerRecyclerViewAdapter(ledgerRecyclerViewItems)
+        ledgerRecyclerView.adapter = LedgerRecyclerViewAdapter(ledgerRecyclerViewItems) { ledgerRecyclerViewItem, view ->
+            showModifyAndDeleteLedgerPopup(ledgerRecyclerViewItem, view)
+        }
+    }
+
+    private fun showModifyAndDeleteLedgerPopup(ledgerRecyclerViewItem: LedgerRecyclerViewItem, view: View) {
+        val popupMenu = PopupMenu(requireContext(), view)
+        val menuInflater: MenuInflater = requireActivity().menuInflater
+        menuInflater.inflate(R.menu.ledger_long_click_popup_menu, popupMenu.menu) // popup_menu.xml 메뉴 파일
+
+        // 메뉴 항목 클릭 리스너 설정
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.recycler_view_long_click_menu_modify -> {
+                    Toast.makeText(requireContext(), "Option 1 clicked ${ledgerRecyclerViewItem.createdTime}", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.recycler_view_long_click_menu_delete -> {
+                    Toast.makeText(requireContext(), "Option 2 clicked ${ledgerRecyclerViewItem.createdTime}", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.gravity = Gravity.NO_GRAVITY
+        // PopupMenu 표시
+        popupMenu.show()
     }
 
     private fun setInitConditionButton() {
@@ -317,6 +384,7 @@ class MainActivityLedgerFragment : Fragment() {
         addLedgerFloatingActionButton.setOnClickListener {
             val intent = Intent(requireContext(), AddLedgerActivity::class.java)
             startActivity(intent)
+            requireActivity().finish()
         }
 
         addLedgerFloatingActionButton.isEnabled = false
