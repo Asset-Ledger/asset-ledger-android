@@ -3,6 +3,7 @@ package asset.ledger.asset_ledger_android
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,9 +11,11 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -22,6 +25,7 @@ import asset.ledger.asset_ledger_android.fragment.AssetTypeAddPopupFragment
 import asset.ledger.asset_ledger_android.fragment.AssetTypePopupFragment
 import asset.ledger.asset_ledger_android.fragment.UseCategoryAddPopupFragment
 import asset.ledger.asset_ledger_android.fragment.UseCategoryPopupFragment
+import asset.ledger.asset_ledger_android.recyclerview.LedgerRecyclerViewItem
 import asset.ledger.asset_ledger_android.retrofit.ledger.LedgerApiInstance
 import asset.ledger.asset_ledger_android.retrofit.ledger.dto.RequestLedgerDto
 import asset.ledger.asset_ledger_android.retrofit.ledger.dto.RequestTransferLedgerDto
@@ -31,6 +35,7 @@ import kotlinx.coroutines.withContext
 import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 class AddLedgerActivity : AppCompatActivity() {
@@ -68,6 +73,7 @@ class AddLedgerActivity : AppCompatActivity() {
     private lateinit var ledgerSaveButton: Button
     private lateinit var ledgerAdditionalCreateButton: Button
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_ledger)
@@ -101,8 +107,10 @@ class AddLedgerActivity : AppCompatActivity() {
         assetOutAccountAddButton = findViewById(R.id.activity_add_ledger_out_account_add_button)
         assetInAccountAddButton = findViewById(R.id.activity_add_ledger_in_account_add_button)
         ledgerSaveButton = findViewById(R.id.activity_add_ledger_save_save_button)
+        ledgerAdditionalCreateButton = findViewById(R.id.activity_add_ledger_additional_create_button)
 
         val userId: String = "user1"
+        val isUpdate : Boolean = intent.getBooleanExtra("isUpdate", false)
 
         hideLinearLayout()
         setDateTextView()
@@ -118,9 +126,71 @@ class AddLedgerActivity : AppCompatActivity() {
         setAssetDetailTypeAddButton()
         setAssetOutAccountAddButtonClickListener()
         setAssetInAccountAddButtonClickListener()
-        setLedgerSaveButton(userId)
+        setLedgerSaveButton(userId, isUpdate)
         setRadioGroupCheckedChangeListener()
 
+        if (isUpdate) {
+            val ledgerRecyclerViewItem = intent.getParcelableExtra("currentLedgerRecyclerViewItem", LedgerRecyclerViewItem::class.java)
+            setUpdateLedgerInfo(ledgerRecyclerViewItem, userId)
+        }
+
+    }
+
+    private fun setUpdateLedgerInfo(ledgerRecyclerViewItem : LedgerRecyclerViewItem?, userId: String) {
+        if (ledgerRecyclerViewItem == null) {
+            Toast.makeText(this@AddLedgerActivity, "수정할 가계부를 불러오는 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        if (ledgerRecyclerViewItem?.plusMinus?.uppercase().equals("PLUS")) {
+            val radioButton : RadioButton = findViewById(R.id.activity_add_ledger_plus_radio_button)
+            radioButton.isChecked = true
+        } else if (ledgerRecyclerViewItem?.plusMinus?.uppercase().equals("MINUS")) {
+            val radioButton: RadioButton = findViewById(R.id.activity_add_ledger_minus_radio_button)
+            radioButton.isChecked = true
+        }
+
+        val transferRadioButton: RadioButton = findViewById(R.id.activity_add_ledger_transfer_radio_button)
+        transferRadioButton.isEnabled = false
+
+        dateTextView.text = changeDateFormat(ledgerRecyclerViewItem.createDate)
+        timeTextView.text = changeTimeFormat(ledgerRecyclerViewItem.createdTime)
+        amountEditText.setText(ledgerRecyclerViewItem.amount.toString())
+        updateUseCategoryEditText(ledgerRecyclerViewItem.useCategory)
+        updateAssetTypeEditText(ledgerRecyclerViewItem.assetType)
+        if (assetTypeEditText.text.toString() == "계좌" || assetTypeEditText.text.toString() == "카드") {
+            assetDetailTypeEditText.setText(ledgerRecyclerViewItem.assetDetailType)
+        }
+
+        descriptionEditText.setText(ledgerRecyclerViewItem.description)
+    }
+
+    fun changeDateFormat(currentDate: String): String {
+        // 입력된 날짜 문자열을 SimpleDateFormat을 사용하여 Date 객체로 파싱
+        val inputFormat = SimpleDateFormat("yyyy/MM/dd", Locale.KOREAN)
+        val date: Date = inputFormat.parse(currentDate)
+
+        // SimpleDateFormat을 사용하여 날짜를 "yyyy/MM/dd" 형식으로 포맷
+        val outputFormat = SimpleDateFormat("yyyy/MM/dd", Locale.KOREAN)
+        val formattedDate = outputFormat.format(date)
+
+        // Calendar를 사용하여 요일을 구하기
+        val calendar = Calendar.getInstance()
+        calendar.time = date
+        val dayOfWeek = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.KOREAN)
+
+        // 결과 반환 (요일 추가)
+        return "$formattedDate (${dayOfWeek.split("요일")[0]})"
+    }
+
+    fun changeTimeFormat(currentTime: String): String {
+        // 입력된 시간 문자열을 SimpleDateFormat을 사용하여 Date 객체로 변환
+        val inputFormat = SimpleDateFormat("a h:mm:ss", Locale.KOREAN)  // "a"는 AM/PM, "h"는 12시간제 시간
+        val date = inputFormat.parse(currentTime)
+
+        // 변환된 Date 객체를 원하는 출력 형식으로 포맷
+        val outputFormat = SimpleDateFormat("a hh:mm", Locale.KOREAN)  // "hh"는 두 자릿수 시간
+        return outputFormat.format(date)
     }
 
     private fun setAssetOutAccountAddButtonClickListener() {
@@ -169,46 +239,61 @@ class AddLedgerActivity : AppCompatActivity() {
         plusMinusRadioGroup.setOnCheckedChangeListener { group, checkedId ->
             when (checkedId) {
                 R.id.activity_add_ledger_transfer_radio_button -> {
-                    useCategoryTitleLinearLayout.visibility = View.GONE
-                    useCategoryLinearLayout.visibility = View.GONE
-                    assetTypeTitleLinearLayout.visibility = View.GONE
-                    assetTypeLinearLayout.visibility = View.GONE
-                    assetDetailTypeTitleLinearLayout.visibility = View.GONE
-                    assetDetailTypeLinearLayout.visibility = View.GONE
-                    useCategoryEditText.text.clear()
-                    assetTypeEditText.text.clear()
-                    assetDetailTypeEditText.text.clear()
-
-                    assetOutAccountTitleLinearLayout.visibility = View.VISIBLE
-                    assetOutAccountLinearLayout.visibility = View.VISIBLE
-                    assetInAccountTitleLinearLayout.visibility = View.VISIBLE
-                    assetInAccountLinearLayout.visibility = View.VISIBLE
+                    checkTransfer()
                 }
                 else -> {
-                    useCategoryTitleLinearLayout.visibility = View.VISIBLE
-                    useCategoryLinearLayout.visibility = View.VISIBLE
-                    assetTypeTitleLinearLayout.visibility = View.VISIBLE
-                    assetTypeLinearLayout.visibility = View.VISIBLE
-
-                    assetOutAccountTitleLinearLayout.visibility = View.GONE
-                    assetOutAccountLinearLayout.visibility = View.GONE
-                    assetInAccountTitleLinearLayout.visibility = View.GONE
-                    assetInAccountLinearLayout.visibility = View.GONE
-                    assetOutAccountEditText.text.clear()
-                    assetInAccountEditText.text.clear()
+                    checkPlusMinus()
                 }
             }
         }
     }
 
-    private fun setLedgerSaveButton(userId: String) {
-        ledgerSaveButton.setOnClickListener {
-            fetchCreateLedger(userId)
+    private fun checkTransfer() {
+        useCategoryTitleLinearLayout.visibility = View.GONE
+        useCategoryLinearLayout.visibility = View.GONE
+        assetTypeTitleLinearLayout.visibility = View.GONE
+        assetTypeLinearLayout.visibility = View.GONE
+        assetDetailTypeTitleLinearLayout.visibility = View.GONE
+        assetDetailTypeLinearLayout.visibility = View.GONE
+        useCategoryEditText.text.clear()
+        assetTypeEditText.text.clear()
+        assetDetailTypeEditText.text.clear()
 
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
+        assetOutAccountTitleLinearLayout.visibility = View.VISIBLE
+        assetOutAccountLinearLayout.visibility = View.VISIBLE
+        assetInAccountTitleLinearLayout.visibility = View.VISIBLE
+        assetInAccountLinearLayout.visibility = View.VISIBLE
+    }
+
+    private fun checkPlusMinus() {
+        useCategoryTitleLinearLayout.visibility = View.VISIBLE
+        useCategoryLinearLayout.visibility = View.VISIBLE
+        assetTypeTitleLinearLayout.visibility = View.VISIBLE
+        assetTypeLinearLayout.visibility = View.VISIBLE
+
+        assetOutAccountTitleLinearLayout.visibility = View.GONE
+        assetOutAccountLinearLayout.visibility = View.GONE
+        assetInAccountTitleLinearLayout.visibility = View.GONE
+        assetInAccountLinearLayout.visibility = View.GONE
+        assetOutAccountEditText.text.clear()
+        assetInAccountEditText.text.clear()
+    }
+
+    private fun setLedgerSaveButton(userId: String, isUpdate: Boolean) {
+        if (isUpdate) {
+            ledgerSaveButton.text = "수정"
+            ledgerAdditionalCreateButton.isEnabled = false
+
+            ////
+
         }
+        else {
+            ledgerSaveButton.setOnClickListener {
+                fetchCreateLedger(userId)
+            }
+        }
+
+
     }
 
     private fun hideLinearLayout() {
@@ -672,10 +757,10 @@ class AddLedgerActivity : AppCompatActivity() {
 
                 Toast.makeText(this@AddLedgerActivity, "정상적으로 가계부 추가를 완료했습니다.", Toast.LENGTH_LONG).show()
 
-                // UI 업데이트 (Main 스레드에서 처리)
-//                withContext(Dispatchers.Main) {
-//                    finish()
-//                }
+//                 UI 업데이트 (Main 스레드에서 처리)
+                withContext(Dispatchers.Main) {
+                    finish()
+                }
             } else {
                 // 오류 처리
                 withContext(Dispatchers.Main) {

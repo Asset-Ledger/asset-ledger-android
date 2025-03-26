@@ -582,7 +582,7 @@
             android:layout_height="wrap_content" />
 
         <Button
-            android:id="@+id/activity_add_ledger_save_continue_button"
+            android:id="@+id/activity_add_ledger_additional_create_button"
             android:text="추가 생성"
             android:layout_width="100dp"
             android:layout_marginTop="20dp"

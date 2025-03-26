@@ -1,6 +1,7 @@
 package asset.ledger.asset_ledger_android.retrofit.ledger.dto
 
 data class ResponseLedgerDto (
+    val id : Long,
     val plusMinusType : String,
     val editDate : String,
     val editTime : String,

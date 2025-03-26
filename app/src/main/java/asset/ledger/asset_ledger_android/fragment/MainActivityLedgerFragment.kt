@@ -183,7 +183,7 @@ class MainActivityLedgerFragment : Fragment() {
                     val responseLedgerDtos : List<ResponseLedgerDto>? = responseLedgerListDto?.ledgerDtos
                     val ledgerRecyclerViewItems : List<LedgerRecyclerViewItem> = ledgerDtosToLedgerItems(responseLedgerDtos)
 
-                    setLedgerRecyclerView(ledgerRecyclerViewItems)
+                    setLedgerRecyclerView(ledgerRecyclerViewItems, userId, startDate)
                 }
 
             } else {
@@ -191,7 +191,7 @@ class MainActivityLedgerFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "데이터를 불러오는 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
                 }
-                setLedgerRecyclerView(listOf())
+                setLedgerRecyclerView(listOf(), userId, startDate)
             }
         } catch (e: Exception) {
             // 예외 처리
@@ -199,7 +199,7 @@ class MainActivityLedgerFragment : Fragment() {
                 Toast.makeText(requireContext(), "네트워크 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
             }
             println(e)
-            setLedgerRecyclerView(listOf())
+            setLedgerRecyclerView(listOf(), userId, startDate)
         }
     }
 
@@ -215,11 +215,13 @@ class MainActivityLedgerFragment : Fragment() {
         ledgerDtosDatesAndTotalAmount.forEach { dateAndAmount ->
             ledgerRecyclerViewItem.add(
                 LedgerRecyclerViewItem(
+                    0,
                     "",
                     "",
                     "",
                     "",
                     0,
+                    "",
                     "",
                     dateAndAmount.key,
                     dateAndAmount.value[0],
@@ -232,11 +234,13 @@ class MainActivityLedgerFragment : Fragment() {
         responseLedgerDtos.forEach { ledgerDto ->
             ledgerRecyclerViewItem.add(
                 LedgerRecyclerViewItem(
+                    ledgerDto.id,
                     ledgerDto.plusMinusType,
                     ledgerDto.useCategory,
                     ledgerDto.assetType,
                     ledgerDto.assetTypeDetail,
                     ledgerDto.amount,
+                    ledgerDto.description,
                     ledgerDto.editTime,
                     ledgerDto.editDate,
                     0,
@@ -336,14 +340,14 @@ class MainActivityLedgerFragment : Fragment() {
         }
     }
 
-    private fun setLedgerRecyclerView(ledgerRecyclerViewItems : List<LedgerRecyclerViewItem>) {
+    private fun setLedgerRecyclerView(ledgerRecyclerViewItems : List<LedgerRecyclerViewItem>, userId: String, startDate: String) {
         ledgerRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         ledgerRecyclerView.adapter = LedgerRecyclerViewAdapter(ledgerRecyclerViewItems) { ledgerRecyclerViewItem, view ->
-            showModifyAndDeleteLedgerPopup(ledgerRecyclerViewItem, view)
+            showModifyAndDeleteLedgerPopup(ledgerRecyclerViewItem, view, userId, startDate)
         }
     }
 
-    private fun showModifyAndDeleteLedgerPopup(ledgerRecyclerViewItem: LedgerRecyclerViewItem, view: View) {
+    private fun showModifyAndDeleteLedgerPopup(ledgerRecyclerViewItem: LedgerRecyclerViewItem, view: View, userId: String, startDate: String) {
         val popupMenu = PopupMenu(requireContext(), view)
         val menuInflater: MenuInflater = requireActivity().menuInflater
         menuInflater.inflate(R.menu.ledger_long_click_popup_menu, popupMenu.menu) // popup_menu.xml 메뉴 파일
@@ -352,11 +356,15 @@ class MainActivityLedgerFragment : Fragment() {
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.recycler_view_long_click_menu_modify -> {
-                    Toast.makeText(requireContext(), "Option 1 clicked ${ledgerRecyclerViewItem.createdTime}", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(requireContext(), AddLedgerActivity::class.java)
+                    intent.putExtra("isUpdate", true)
+                    intent.putExtra("currentLedgerRecyclerViewItem", ledgerRecyclerViewItem)
+                    startActivity(intent)
                     true
                 }
                 R.id.recycler_view_long_click_menu_delete -> {
-                    Toast.makeText(requireContext(), "Option 2 clicked ${ledgerRecyclerViewItem.createdTime}", Toast.LENGTH_SHORT).show()
+                    fetchDeleteLedger(userId, ledgerRecyclerViewItem.id, startDate)
+                    Toast.makeText(requireContext(), "삭제 되었습니다. ${ledgerRecyclerViewItem.createdTime}", Toast.LENGTH_SHORT).show()
                     true
                 }
                 else -> false
@@ -383,8 +391,8 @@ class MainActivityLedgerFragment : Fragment() {
     private fun setAddLedgerFloatingActionButton() {
         addLedgerFloatingActionButton.setOnClickListener {
             val intent = Intent(requireContext(), AddLedgerActivity::class.java)
+            intent.putExtra("isUpdate", false)
             startActivity(intent)
-            requireActivity().finish()
         }
 
         addLedgerFloatingActionButton.isEnabled = false
@@ -571,7 +579,7 @@ class MainActivityLedgerFragment : Fragment() {
                 val selectedItem = parentView?.getItemAtPosition(position).toString()
 
                 // assetType이 계좌 or 카드일 경우 assetDetailTypeSpinner visible 및 세팅
-                if (selectedItem.equals("계좌") or selectedItem.equals("카드")) {
+                if (selectedItem.equals("계좌") || selectedItem.equals("카드")) {
 
                     // retrofit
                     fetchGetAssetDetailTypes(userId, selectedItem)
@@ -719,5 +727,52 @@ class MainActivityLedgerFragment : Fragment() {
             AssetDetailApiInstance.assetDetailApiService.getAssetDetails(userId, assetType)
         }
     }
+
+    // Ledger 수정 API 시작
+    private fun fetchDeleteLedger(userId: String, ledgerId: Long, startDate: String) {
+        // 비동기 작업을 위한 launch 호출
+        lifecycleScope.launch {
+            // 비동기 API 호출을 처리
+            handleDeleteApiResponse(userId, ledgerId, startDate)
+        }
+    }
+
+    private suspend fun handleDeleteApiResponse(userId: String, ledgerId: Long, startDate: String) {
+        try {
+            val response = deleteLedger(userId, ledgerId)
+
+            // 응답 본문, 상태 코드, 헤더 처리
+            if (response.isSuccessful) {
+                val statusCode = response.code() // 상태 코드
+                val headers = response.headers() // 헤더
+
+                // UI 업데이트 (Main 스레드에서 처리)
+                withContext(Dispatchers.Main) {
+                    fetchGetAssets(userId, startDate)
+                }
+            } else {
+                // 오류 처리
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "가계부 삭제 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+                }
+
+                setUseCategorySpinner(listOf("전체"))
+            }
+        } catch (e: Exception) {
+            // 예외 처리
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "가계부 삭제 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+            }
+
+            setUseCategorySpinner(listOf("전체"))
+        }
+    }
+
+    private suspend fun deleteLedger(userId: String, ledgerId: Long): Response<Void> {
+        return withContext(Dispatchers.IO) {
+            LedgerApiInstance.ledgerApiService.deleteLedger(userId, ledgerId)
+        }
+    }
+    // Ledger 수정 API 끝
 
 }
