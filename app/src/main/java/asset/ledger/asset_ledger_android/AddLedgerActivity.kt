@@ -111,6 +111,7 @@ class AddLedgerActivity : AppCompatActivity() {
 
         val userId: String = "user1"
         val isUpdate : Boolean = intent.getBooleanExtra("isUpdate", false)
+        var updateLedgerId : Long = -1
 
         hideLinearLayout()
         setDateTextView()
@@ -126,13 +127,14 @@ class AddLedgerActivity : AppCompatActivity() {
         setAssetDetailTypeAddButton()
         setAssetOutAccountAddButtonClickListener()
         setAssetInAccountAddButtonClickListener()
-        setLedgerSaveButton(userId, isUpdate)
         setRadioGroupCheckedChangeListener()
 
         if (isUpdate) {
             val ledgerRecyclerViewItem = intent.getParcelableExtra("currentLedgerRecyclerViewItem", LedgerRecyclerViewItem::class.java)
             setUpdateLedgerInfo(ledgerRecyclerViewItem, userId)
+            updateLedgerId = ledgerRecyclerViewItem?.id ?: -1
         }
+        setLedgerSaveButton(userId, isUpdate, updateLedgerId)
 
     }
 
@@ -279,12 +281,14 @@ class AddLedgerActivity : AppCompatActivity() {
         assetInAccountEditText.text.clear()
     }
 
-    private fun setLedgerSaveButton(userId: String, isUpdate: Boolean) {
+    private fun setLedgerSaveButton(userId: String, isUpdate: Boolean, updateLedgerId: Long) {
         if (isUpdate) {
             ledgerSaveButton.text = "수정"
             ledgerAdditionalCreateButton.isEnabled = false
 
-            ////
+            ledgerSaveButton.setOnClickListener {
+                fetchUpdateLedger(userId, updateLedgerId)
+            }
 
         }
         else {
@@ -294,6 +298,26 @@ class AddLedgerActivity : AppCompatActivity() {
         }
 
 
+    }
+
+    private fun fetchUpdateLedger(userId: String, updateLedgerId: Long) {
+        if (!validatePlusMinusLedgerRequest()) {
+            Toast.makeText(this, "필요한 내용들을 정확 입력해주세요.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+
+        val requestLedgerDto: RequestLedgerDto = buildRequestPlusMinusLedgerDto()
+
+        // 비동기 작업을 위한 launch 호출
+        lifecycleScope.launch {
+            // 비동기 API 호출을 처리
+            handleUpdateLedgerApiResponse(
+                userId,
+                updateLedgerId,
+                requestLedgerDto
+            )
+        }
     }
 
     private fun hideLinearLayout() {
@@ -791,6 +815,46 @@ class AddLedgerActivity : AppCompatActivity() {
     private suspend fun createPlusMinusLedger(userId: String, requestLedgerDto: RequestLedgerDto): Response<Void> {
         return withContext(Dispatchers.IO) {
             LedgerApiInstance.ledgerApiService.createPlusMinusLedger(userId, requestLedgerDto)
+        }
+    }
+
+    private suspend fun handleUpdateLedgerApiResponse(userId : String, updateLedgerId: Long, requestLedgerDto: RequestLedgerDto) {
+        try {
+            val response = updateLedger(userId, updateLedgerId, requestLedgerDto)
+
+            // 응답 본문, 상태 코드, 헤더 처리
+            if (response.isSuccessful) {
+                Toast.makeText(this@AddLedgerActivity, "정상적으로 가계부 수정을 완료했습니다.", Toast.LENGTH_LONG).show()
+
+//                 UI 업데이트 (Main 스레드에서 처리)
+                withContext(Dispatchers.Main) {
+                    finish()
+                }
+            } else {
+                // 오류 처리
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@AddLedgerActivity, "가계부 수정 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+                }
+            }
+        } catch (e: Exception) {
+            // 예외 처리
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@AddLedgerActivity, "가계부 수정 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private suspend fun updateLedger(
+        userId: String,
+        updateLedgerId: Long,
+        requestUpdateLedgerDto: RequestLedgerDto,
+    ): Response<Void> {
+        return withContext(Dispatchers.IO) {
+            LedgerApiInstance.ledgerApiService.updateLedger(
+                userId,
+                updateLedgerId,
+                requestUpdateLedgerDto
+            )
         }
     }
 

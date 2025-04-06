@@ -41,7 +41,8 @@ interface LedgerApiService {
     @PUT("/ledger/{ledgerId}")
     suspend fun updateLedger(
         @Header("user-id") userId : String,
-        @Path("ledgerId") id : Long
+        @Path("ledgerId") id : Long,
+        @Body requestUpdateLedgerDto: RequestLedgerDto
     ) : Response<Void>
 
     @DELETE("/ledger/{ledgerId}")

@@ -71,6 +71,9 @@ class MainActivityLedgerFragment : Fragment() {
     private lateinit var ledgerContentSwipeRefreshLayout: SwipeRefreshLayout
     private var assetTypeApiFlag : Boolean = false
     private var useCategoryApiFlag : Boolean = false
+    private var firstGetLedgerFlag : Boolean = false
+    private lateinit var userId: String
+    private lateinit var startDate: String
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -93,8 +96,8 @@ class MainActivityLedgerFragment : Fragment() {
         addLedgerFloatingActionButton = view.findViewById(R.id.fragment_ledger_top_menu_add_ledger_floating_action_button)
         ledgerContentSwipeRefreshLayout = view.findViewById(R.id.fragment_ledger_content_swipe_refresh_layout)
 
-        val userId : String = "user1"
-        val startDate : String = "1"
+        userId = "user1"
+        startDate = "1"
 
         // yearMonthTextView 세팅
         setYearMonthText()
@@ -132,6 +135,13 @@ class MainActivityLedgerFragment : Fragment() {
         setLedgerContentSwipeRefreshLayoutRefreshListener(userId, startDate)
 
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (firstGetLedgerFlag) {
+            fetchGetLedgers(userId, startDate)
+        }
     }
 
     private fun setLedgerContentSwipeRefreshLayoutRefreshListener(userId: String, startDate: String) {
@@ -186,6 +196,8 @@ class MainActivityLedgerFragment : Fragment() {
                     setLedgerRecyclerView(ledgerRecyclerViewItems, userId, startDate)
                 }
 
+                firstGetLedgerFlag = true
+
             } else {
                 // 오류 처리
                 withContext(Dispatchers.Main) {
@@ -198,6 +210,7 @@ class MainActivityLedgerFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 Toast.makeText(requireContext(), "네트워크 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
             }
+            println("123123123")
             println(e)
             setLedgerRecyclerView(listOf(), userId, startDate)
         }
@@ -328,6 +341,7 @@ class MainActivityLedgerFragment : Fragment() {
                 !assetTypeSpinner.selectedItem.toString().equals("카드")) {
                 assetDetailType = assetDetailTypeSpinner.selectedItem.toString()
             }
+
             LedgerApiInstance.ledgerApiService.getLedgers(
                 userId,
                 yearMonthTextView.text.toString(),
@@ -356,10 +370,15 @@ class MainActivityLedgerFragment : Fragment() {
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.recycler_view_long_click_menu_modify -> {
-                    val intent = Intent(requireContext(), AddLedgerActivity::class.java)
-                    intent.putExtra("isUpdate", true)
-                    intent.putExtra("currentLedgerRecyclerViewItem", ledgerRecyclerViewItem)
-                    startActivity(intent)
+                    if (ledgerRecyclerViewItem.useCategory.equals("입금 이체") || ledgerRecyclerViewItem.useCategory.equals("출금 이체")) {
+                        Toast.makeText(requireContext(), "계좌간 이체는 수정이 불가능 합니다.", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        val intent = Intent(requireContext(), AddLedgerActivity::class.java)
+                        intent.putExtra("isUpdate", true)
+                        intent.putExtra("currentLedgerRecyclerViewItem", ledgerRecyclerViewItem)
+                        startActivity(intent)
+                    }
                     true
                 }
                 R.id.recycler_view_long_click_menu_delete -> {
@@ -710,7 +729,7 @@ class MainActivityLedgerFragment : Fragment() {
                     Toast.makeText(requireContext(), "사용 분류를 불러오는 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
                 }
 
-                setUseCategorySpinner(listOf("전체"))
+                setAssetDetailTypeSpinner(listOf("전체"))
             }
         } catch (e: Exception) {
             // 예외 처리
@@ -718,7 +737,7 @@ class MainActivityLedgerFragment : Fragment() {
                 Toast.makeText(requireContext(), "사용 분류를 불러오는 과정에서 네트워크 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
             }
 
-            setUseCategorySpinner(listOf("전체"))
+            setAssetDetailTypeSpinner(listOf("전체"))
         }
     }
 
@@ -755,16 +774,12 @@ class MainActivityLedgerFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "가계부 삭제 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
                 }
-
-                setUseCategorySpinner(listOf("전체"))
             }
         } catch (e: Exception) {
             // 예외 처리
             withContext(Dispatchers.Main) {
                 Toast.makeText(requireContext(), "가계부 삭제 과정에서 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
             }
-
-            setUseCategorySpinner(listOf("전체"))
         }
     }
 
