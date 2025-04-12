@@ -1,11 +1,15 @@
 package asset.ledger.asset_ledger_android.retrofit.ledger
 
+import asset.ledger.asset_ledger_android.BuildConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object LedgerApiInstance {
 
-    private const val BASE_URL = "http://10.0.2.2:8080"
+    // LOCAL
+//    private const val BASE_URL = "http://10.0.2.2:8080"
+    // AWS EC2
+    private val BASE_URL = BuildConfig.SERVER_IP
 
     // Retrofit 객체를 생성하여 반환
     val ledgerApiService : LedgerApiService by lazy {

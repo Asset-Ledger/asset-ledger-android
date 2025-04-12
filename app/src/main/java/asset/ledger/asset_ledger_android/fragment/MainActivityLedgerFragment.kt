@@ -640,7 +640,6 @@ class MainActivityLedgerFragment : Fragment() {
                     val responseUseCategoryDtos : List<ResponseUseCategoryDto>? = responseUseCategoryListDto?.useCategoryDtos
                     val useCategories : MutableList<String> = mutableListOf("전체")
 
-                    println(responseUseCategoryDtos?.get(0))
                     if (responseUseCategoryDtos != null){
                         responseUseCategoryDtos.forEach { responseUseCategory ->
                             useCategories.add(responseUseCategory.useCategory)
@@ -665,7 +664,7 @@ class MainActivityLedgerFragment : Fragment() {
         } catch (e: Exception) {
             // 예외 처리
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "사용 분류를 불러오는 과정에서 네트워크 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "사용 분류를 불러오는 과정에서 네트워크 오류가 발생했습니다.123", Toast.LENGTH_LONG).show()
             }
 
             setUseCategorySpinner(listOf("전체"))

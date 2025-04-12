@@ -1,6 +1,14 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+}
+
+val dotenv = Properties()
+val dotenvFile = rootProject.file("./app/.env")
+if (dotenvFile.exists()) {
+    dotenv.load(dotenvFile.inputStream())
 }
 
 android {
@@ -18,6 +26,12 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "SERVER_IP", "\"${dotenv.getProperty("SERVER_IP")}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
