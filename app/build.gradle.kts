@@ -3,6 +3,10 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+
+    // Firebase
+    id("com.google.gms.google-services")
+
 }
 
 val dotenv = Properties()
@@ -100,4 +104,7 @@ dependencies {
     // Retrofit에서 코루틴을 사용할 수 있게 해주는 어댑터
     implementation ("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2")
 
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation ("com.google.firebase:firebase-messaging:24.1.1")
 }

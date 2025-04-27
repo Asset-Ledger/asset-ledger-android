@@ -8,12 +8,14 @@ import asset.ledger.asset_ledger_android.fragment.MainActivityLedgerFragment
 import asset.ledger.asset_ledger_android.fragment.MainActivitySettingFragment
 import asset.ledger.asset_ledger_android.fragment.MainActivityStatisticFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.FirebaseApp
 
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        FirebaseApp.initializeApp(this)
 
         val bottomNavigation: BottomNavigationView = findViewById(R.id.activity_main_bottom_navigation)
 

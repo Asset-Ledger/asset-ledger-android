@@ -2,7 +2,6 @@ package asset.ledger.asset_ledger_android.retrofit.asset
 
 import asset.ledger.asset_ledger_android.retrofit.asset.dto.RequestAssetDto
 import asset.ledger.asset_ledger_android.retrofit.asset.dto.ResponseAssetListDto
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
