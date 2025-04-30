@@ -1,7 +1,11 @@
 package asset.ledger.asset_ledger_android
 
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import asset.ledger.asset_ledger_android.fragment.MainActivityAssetFragment
 import asset.ledger.asset_ledger_android.fragment.MainActivityLedgerFragment
@@ -18,6 +22,18 @@ class MainActivity : AppCompatActivity() {
         FirebaseApp.initializeApp(this)
 
         val bottomNavigation: BottomNavigationView = findViewById(R.id.activity_main_bottom_navigation)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    1001 // requestCode
+                )
+            }
+        }
 
         // 바텀 네비게이션 아이템 선택 리스너 설정
         bottomNavigation.setOnItemSelectedListener { item ->
